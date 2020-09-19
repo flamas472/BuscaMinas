@@ -1,5 +1,6 @@
 class Position {
     constructor(x, y) {
+        
         this.x = x;
         this.y = y;
     }
@@ -10,17 +11,30 @@ class Position {
 
 class Casilla {
     constructor(x, y) {
+        this.numero = 10;
         this.position = new Position(x, y);
         this.html = document.createElement('div');
         this.html.className = 'casilla';
         this.html.addEventListener('click', () => {
-            this.html.style.backgroundColor = 'white';
-            this.html.innerText = this.position.toString();
+            this.eventoClick();
         });
-        
+    }
+    
+    
+    eventoClick() {
+        this.html.style.backgroundColor = 'white';
+        this.html.innerText = this.position.toString();
     }
 
 }
+
+class Mina extends Casilla {
+    eventoClick() {
+        this.html.style.backgroundColor = 'red';
+        this.html.innerText = 'X';
+    }
+}
+
 
 class Mapa {
     constructor(ancho, alto) {
@@ -45,17 +59,13 @@ class Mapa {
     llenarhtml() {
         this.mapa.forEach(row =>  {
             row.forEach(position => {
+
                 let casilla = new Casilla(position.x, position.y);
-                this.html.appendChild(casilla.html);
-                /*
-                let casilla = document.createElement('div');
-                casilla.className = 'casilla';
-                casilla.addEventListener('click', () => {
-                    casilla.style.backgroundColor = 'white';
-                    casilla.innerText = position.toString();
-                });
-                this.html.appendChild(casilla);
-                //*/
+                if(position.x == position.y) {
+                    this.html.appendChild((new Mina(position.x, position.y)).html);
+                } else {
+                    this.html.appendChild(casilla.html);
+                }
             });
             
         });
