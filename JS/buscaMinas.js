@@ -28,7 +28,6 @@ class Position {
             let dentro = true;
             if(pos.x < 0 || pos.y < 0 || pos.x == ancho || pos.y == alto) {
                 dentro = false;
-                console.log('(' + pos.x + ', ' + pos.y + ') fuera');
             }
             return dentro;
         });
@@ -37,10 +36,11 @@ class Position {
 
 class Casilla {
     
-    constructor(x, y) {
+    constructor(x, y, mapa) {
+        this.position = new Position(x, y);
+        this.mapa = mapa;
         this.minasEnContacto = 0;
         this.estado = 'oculto';
-        this.position = new Position(x, y);
         this.html = document.createElement('div');
         this.html.className = 'casilla';
         this.html.addEventListener('click', this.revelar.bind(this));
@@ -49,8 +49,15 @@ class Casilla {
     }
 
     revelar() {
+        
         this.html.style.backgroundColor = 'white';
         this.html.innerText = this.minasEnContacto;
+        if(this.estado == 'oculto' && this.minasEnContacto == 0) {
+            this.estado = 'revelado';
+            this.mapa.revelarAdyacentes(this.position);
+        } else {
+            this.estado = 'revelado';
+        }
         //this.html.removeEventListener('click', )
         return 'casilla';
     }
@@ -58,6 +65,7 @@ class Casilla {
     ponerBanderita(e) {
         e.preventDefault();
         this.html.innerHTML = '<i class="fas fa-flag"></i>';
+        this.estado = 'bandera';
     }
 
     agregarMinaEnContacto() {
@@ -72,6 +80,7 @@ class Mina extends Casilla {
     revelar() {
         this.html.style.backgroundColor = 'red';
         this.html.innerHTML = '<i class="fas fa-bomb"></i>';
+        //perder
         return 'mina';
     }
 }
@@ -104,9 +113,7 @@ class Mapa {
         let y = Math.floor(Math.random()*this.alto);
         let pos = new Position(x, y);
         if(this.minas.some(aPos => aPos.equals(pos))) {
-            console.log('mina descartada' + pos.toString());
         } else {
-            console.log('nueva mina añadida' + pos.toString());
             this.minas.push(pos);
         }
         
@@ -135,9 +142,9 @@ class Mapa {
             let rowhtml = row.map(pos => {
                 let poshtml;
                 if(this.hayMinaPos(pos)) {
-                    poshtml = new Mina(pos.x, pos.y);
+                    poshtml = new Mina(pos.x, pos.y, this);
                 } else {
-                    poshtml = new Casilla(pos.x, pos.y)
+                    poshtml = new Casilla(pos.x, pos.y, this)
                 }
                 this.html.appendChild(poshtml.html);
                 return poshtml;
@@ -149,9 +156,14 @@ class Mapa {
 
     actualizarCasillas(pos) {
         pos.adyacentes(this.ancho, this.alto).forEach(mina => {
-            //console.log(this.mapahtml[mina.y][mina.x]);
             this.mapahtml[mina.y][mina.x].agregarMinaEnContacto();
         });
+    }
+
+    revelarAdyacentes(position) {
+        position.adyacentes(this.ancho, this.alto).forEach(pos => {
+            this.mapahtml[pos.y][pos.x].revelar();
+        })
     }
 
 }
