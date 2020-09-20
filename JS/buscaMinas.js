@@ -13,13 +13,33 @@ class Position {
     equals(pos) {
         return this.distancia(pos) == 0;
     }
+    adyacentes(ancho, alto) {
+        let posicionesAdyacentes = [];
+        posicionesAdyacentes.push(new Position(this.x-1, this.y-1));
+        posicionesAdyacentes.push(new Position(this.x-1, this.y));
+        posicionesAdyacentes.push(new Position(this.x-1, this.y+1));
+        posicionesAdyacentes.push(new Position(this.x, this.y-1));
+        posicionesAdyacentes.push(new Position(this.x, this.y+1));
+        posicionesAdyacentes.push(new Position(this.x+1, this.y-1));
+        posicionesAdyacentes.push(new Position(this.x+1, this.y));
+        posicionesAdyacentes.push(new Position(this.x+1, this.y+1));
+
+        return posicionesAdyacentes.filter(pos => {
+            let dentro = true;
+            if(pos.x < 0 || pos.y < 0 || pos.x == ancho || pos.y == alto) {
+                dentro = false;
+                console.log('(' + pos.x + ', ' + pos.y + ') fuera');
+            }
+            return dentro;
+        });
+    }
 }
 
 class Casilla {
     
     constructor(x, y) {
         this.minasEnContacto = 0;
-        
+        this.estado = 'oculto';
         this.position = new Position(x, y);
         this.html = document.createElement('div');
         this.html.className = 'casilla';
@@ -124,12 +144,16 @@ class Mapa {
             });
             return rowhtml;
         });
-        this.actualizarCasillas();
+        this.minas.forEach(pos => this.actualizarCasillas(pos))
     }
 
-    actualizarCasillas() {
-        
+    actualizarCasillas(pos) {
+        pos.adyacentes(this.ancho, this.alto).forEach(mina => {
+            //console.log(this.mapahtml[mina.y][mina.x]);
+            this.mapahtml[mina.y][mina.x].agregarMinaEnContacto();
+        });
     }
+
 }
 
 const link = document.createElement('link');
