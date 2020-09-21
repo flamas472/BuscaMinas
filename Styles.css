@@ -24,11 +24,9 @@ html {
 }
 
 #map {
-    width: 300px;
-    height: 300px;
     display: grid;
-    grid-template: repeat(10, 1fr)/repeat(10, 1fr);
-    gap: 6px;
+    gap: 0px;
+    background-color: #808080;
 }
 .casilla {
     display: flex;
@@ -36,14 +34,58 @@ html {
     align-items: center;
     font-weight: 900;
 
-    background-color: #aaaaaa;
+    background-color: #c0c0c0;
     padding: 0;
     margin: 0;
-    width: 100%;
-    height: 100%;
-    border-top: 3px solid #f0f0f0;
-    border-left: 3px solid #f0f0f0;
-    border-bottom: 3px solid #696969;
-    border-right: 3px solid  #696969;
-    
+    width: calc(100%-8px);
+    height: calc(100%-8px);
+    border-top: 4px solid #fefefe;
+    border-left: 4px solid #fefefe;
+    border-bottom: 4px solid #808080;
+    border-right: 4px solid  #808080;
+}
+
+.revelada {
+    background-color: #c0c0c0;
+    width: calc(100%-2px);
+    height: calc(100%-2px);
+    border: 1px solid  #808080;
+}
+
+.mina {
+    background-color: #ff0000;
+    width: calc(100%-2px);
+    height: calc(100%-2px);
+    border: 1px solid  #808080;
+    color: #000000;
+}
+.bandera {
+    color: #000000;
+}
+.numero0 {
+    color: #c0c0c0;
+}
+.numero1 {
+    color: #0000ff;
+}
+.numero2 {
+    color: #008000;
+}
+.numero3 {
+    color: #ff0000;
+}
+.numero4 {
+    color: #000080;
+}
+.numero5 {
+    color: #800000;
+}
+.numero6 {
+    color: #9400d3;
+}
+.numero7 {
+    color: #000000;
+}
+.numero8 {
+    color: #ffffff;
 }

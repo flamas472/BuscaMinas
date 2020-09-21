@@ -38,9 +38,9 @@ class Casilla {
     
     constructor(x, y, mapa) {
         this.position = new Position(x, y);
-        this.mapa = mapa;
+        this.mapa = mapa;//referencia al mapa al cual pertenece|
         this.minasEnContacto = 0;
-        this.estado = 'oculto';
+        this.estado = 'oculto';        
         this.html = document.createElement('div');
         this.html.className = 'casilla';
         this.html.addEventListener('click', this.revelar.bind(this));
@@ -50,7 +50,7 @@ class Casilla {
 
     revelar() {
         
-        this.html.style.backgroundColor = 'white';
+        //this.html.style.backgroundColor = 'white';
         this.html.innerText = this.minasEnContacto;
         if(this.estado == 'oculto' && this.minasEnContacto == 0) {
             this.estado = 'revelado';
@@ -58,6 +58,7 @@ class Casilla {
         } else {
             this.estado = 'revelado';
         }
+        this.html.className = 'casilla revelada numero' + this.minasEnContacto;
         //this.html.removeEventListener('click', )
         return 'casilla';
     }
@@ -65,11 +66,17 @@ class Casilla {
     ponerBanderita(e) {
         e.preventDefault();
         this.html.innerHTML = '<i class="fas fa-flag"></i>';
-        this.estado = 'bandera';
+        //this.estado = 'bandera';
+        //let banderita = document.createElement('i');
+        
+        banderita.className = 'fas fa-flag';
+        this.html.appendChild(banderita);
     }
 
     agregarMinaEnContacto() {
         this.minasEnContacto++;
+        console.log(this.html.className);
+        console.log(this.html.classList);
     }
 }
 
@@ -78,10 +85,13 @@ class Mina extends Casilla {
         super(x, y);
     }
     revelar() {
-        this.html.style.backgroundColor = 'red';
+        this.html.className = 'casilla revelada mina';
         this.html.innerHTML = '<i class="fas fa-bomb"></i>';
         //perder
         return 'mina';
+    }
+    agregarMinaEnContacto() {
+
     }
 }
 
@@ -99,6 +109,8 @@ class Mapa {
         this.html.id = 'map';
         //this.llenarhtml();
         this.llenarhtml();
+        this.html.style.width = 25*this.ancho + 'px';
+        this.html.style.height = 25*this.alto + 'px';
         this.html.style.gridTemplate = 'repeat('+ alto +', 1fr)/repeat('+ ancho +', 1fr)';
     }
 
@@ -175,7 +187,7 @@ link.href = 'Styles.css';
 
 document.getElementsByTagName('head')[0].appendChild(link);
 const buscaMinas = document.getElementById("buscaMinas");
-const mapa = new Mapa(9,9);
+const mapa = new Mapa(16, 16, 40);
 buscaMinas.appendChild(mapa.html);
 
 
