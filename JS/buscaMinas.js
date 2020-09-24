@@ -35,85 +35,103 @@ class Position {
 }
 
 class Casilla {
-    
     constructor(x, y, mapa) {
         this.position = new Position(x, y);
         this.mapa = mapa;//referencia al mapa al cual pertenece|
         this.minasEnContacto = 0;
         this.estado = 'oculto';        
-        this.html = document.createElement('div');
-        this.html.className = 'casilla';
-        let casillaOculta = new CasillaOculta(this);
-        this.html.appendChild(casillaOculta.contenido);
-        this.html.addEventListener('contextmenu', e => e.preventDefault());
-        this.html.addEventListener('selectionchange', e => e.preventDefault());
+        this.contenedor = document.createElement('div');
+        this.contenedor.className = 'casilla';
+        this.contiene = new CasillaOculta(this);
+        this.contenedor.appendChild(this.contiene.contenido);
+        this.contenedor.addEventListener('contextmenu', e => e.preventDefault());
+        this.contenedor.addEventListener('selectionchange', e => e.preventDefault());
     }
-
     revelar() {
-        this.html.innerText = this.minasEnContacto;
-        if(this.estado == 'oculto' && this.minasEnContacto == 0) {
+        
+        if(this.estado == 'revelado') {
+            //si ya esta revelada no hace nada
+        } else if(this.estado == 'oculto'){
+            //si está oculta cambio estado a revelado
+            this.contenedor.removeChild(this.contiene.contenido);
+            this.contenedor.className = 'casilla revelada';
+            //this.contiene = null;
             this.estado = 'revelado';
-            this.mapa.revelarAdyacentes(this.position);
-        } else {
-            this.estado = 'revelado';
+            if(this.minasEnContacto == 0) {
+                //si no tiene minas en contacto revelo adyacentes
+                this.revelarAdyacentes();
+            } else {
+                //si tiene minas en contacto coloco el numero y el boton delante
+                 //this.contenedor.innerText = this.minasEnContacto;
+                 let numero = new CasillaNumero(this);
+                 this.contenedor.append(numero.contenido);
+            }
         }
-        this.html.className = 'casilla revelada numero' + this.minasEnContacto;
+        
     }
-
+    revelarAdyacentes() {
+        this.mapa.revelarAdyacentes(this.position);
+    }
     ponerBanderita(e) {
-        let banderita = new Banderita(this);
-        this.html.appendChild(banderita.contenido);
+        this.estado = 'banderita';
+        this.contenedor.removeChild(this.contiene.contenido);
+        this.contiene = new Banderita(this);
+        this.contenedor.appendChild(this.contiene.contenido);
     }
-
+    quitarBanderita() {
+        this.estado = 'oculto';
+        this.contenedor.removeChild(this.contiene.contenido);
+        this.contiene = new CasillaOculta(this);
+        this.contenedor.appendChild(this.contiene.contenido);
+    }
     agregarMinaEnContacto() {
         this.minasEnContacto++;
     }
 }
-class Mina extends Casilla {
-    constructor(x, y) {
+class CasillaMina extends Casilla {
+    /*constructor(x, y) {
         super(x, y);
-    }
+    }*/
     revelar() {
-        this.html.className = 'casilla revelada mina';
-        this.html.innerHTML = '<i class="fas fa-bomb"></i>';
-        //aca debería perder, recordar que tiene referencia al mapa (this.mapa)
+        if(this.estado != 'banderita') {
+            this.contenedor.className = 'casilla revelada mina';
+            this.contenedor.innerHTML = '<i class="fas fa-bomb"></i>';
+        } else {
+            //aca debería perder, recordar que tiene referencia al mapa (this.mapa)
+        }
     }
 }
 //Refactorizar poner objetos en las casillas con referencia a la misma
-
 class CasillaOculta {
     constructor(casilla) {
         this.casilla = casilla;
         this.contenido = document.createElement('div');
         this.contenido.style.height = '100%';
         this.contenido.style.width = '100%';
+        this.contenido.className = 'casillaocultasdasd';
         this.contenido.addEventListener('click', this.clickIzquierdo.bind(this));
         this.contenido.addEventListener('contextmenu', this.clickDerecho.bind(this));
         
     }
-
     clickIzquierdo() {
-        this.casilla.html.removeChild(this.contenido);
         this.casilla.revelar();
     }
     clickDerecho(e) {
         e.preventDefault();
-        this.casilla.html.removeChild(this.contenido);
         this.casilla.ponerBanderita();
     }
 }
-class CasillaMina {
-    constructor(casilla) {
-        this.casilla = casilla;
-
-    }
-}
-class CasillaSegura {
+class CasillaNumero {
     constructor(casilla) {
         this.casilla = casilla;
         this.contenido = document.createElement('div');
         this.contenido.innerText = casilla.minasEnContacto;
-        this.contenido.className = 'casilla revelada numero' + this.minasEnContacto;
+        this.contenido.className = 'contenido numero' + this.casilla.minasEnContacto;
+        this.contenido.addEventListener('contextmenu', this.clickDerecho.bind(this));
+    }
+    clickDerecho(e) {
+        e.preventDefault();
+        this.casilla.revelarAdyacentes();
     }
 }
 class Banderita {
@@ -121,15 +139,10 @@ class Banderita {
         this.casilla = casilla;
         this.contenido = document.createElement('i');
         this.contenido.className = 'fas fa-flag';
-
-        this.contenido.addEventListener('click', this.quitarBanderita.bind(this));
+        this.contenido.addEventListener('click', this.clickIzquierdo.bind(this));
     }
-    
-    //quitarBanderita remueve la bandera y coloca nuevamente la casilla oculta
-    quitarBanderita() {
-        this.casilla.html.removeChild(this.contenido);
-        let casillaOculta = new CasillaOculta(this.casilla);
-        this.casilla.html.appendChild(casillaOculta.contenido);
+    clickIzquierdo() {
+        this.casilla.quitarBanderita();
     }
 }
 
@@ -151,13 +164,13 @@ class Mapa {
         this.minas = [];
         this.llenarMinas();
         this.llenarMapa(ancho, alto);
-        this.html = document.createElement('div');
-        this.html.id = 'map';
+        this.contenedor = document.createElement('div');
+        this.contenedor.id = 'map';
         //this.llenarhtml();
         this.llenarhtml();
-        this.html.style.width = 25*this.ancho + 'px';
-        this.html.style.height = 25*this.alto + 'px';
-        this.html.style.gridTemplate = 'repeat('+ alto +', 1fr)/repeat('+ ancho +', 1fr)';
+        this.contenedor.style.width = 25*this.ancho + 'px';
+        this.contenedor.style.height = 25*this.alto + 'px';
+        this.contenedor.style.gridTemplate = 'repeat('+ alto +', 1fr)/repeat('+ ancho +', 1fr)';
     }
 
     llenarMinas() {
@@ -200,11 +213,11 @@ class Mapa {
             let rowhtml = row.map(pos => {
                 let poshtml;
                 if(this.hayMinaPos(pos)) {
-                    poshtml = new Mina(pos.x, pos.y, this);
+                    poshtml = new CasillaMina(pos.x, pos.y, this);
                 } else {
                     poshtml = new Casilla(pos.x, pos.y, this)
                 }
-                this.html.appendChild(poshtml.html);
+                this.contenedor.appendChild(poshtml.contenedor);
                 return poshtml;
             });
             return rowhtml;
@@ -219,9 +232,26 @@ class Mapa {
     }
 
     revelarAdyacentes(position) {
-        position.adyacentes(this.ancho, this.alto).forEach(pos => {
-            this.mapahtml[pos.y][pos.x].revelar();
-        })
+        let adyacentes = position.adyacentes(this.ancho, this.alto);
+        let minas = this.mapahtml[position.y][position.x].minasEnContacto;
+        if(minas <= this.banderitasAdyacentes(position)) {
+            //solo revela adyacentes si tiene en contacto tantas banderas como minas tiene
+            adyacentes.forEach(pos => {
+                this.mapahtml[pos.y][pos.x].revelar();
+            })
+        }
+    }
+
+    banderitasAdyacentes(position) {
+        let adyacentes = position.adyacentes(this.ancho, this.alto);
+        return adyacentes.reduce((banderitas, pos) => {
+            if(this.mapahtml[pos.y][pos.x].estado == 'banderita') {
+                banderitas++;
+            }
+            return banderitas;
+        }, 0);
+        let minas = this.mapahtml[position.y][position.x].minasEnContacto;
+
     }
 
 }
@@ -234,6 +264,6 @@ link.href = 'Styles.css';
 document.getElementsByTagName('head')[0].appendChild(link);
 const buscaMinas = document.getElementById("buscaMinas");
 const mapa = new Mapa(16, 16, 40);
-buscaMinas.appendChild(mapa.html);
+buscaMinas.appendChild(mapa.contenedor);
 
 

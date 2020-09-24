@@ -51,6 +51,13 @@ html {
     border-bottom: 4px solid #808080;
     border-right: 4px solid  #808080;
 }
+.contenido {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 .revelada {
     background-color: #c0c0c0;
