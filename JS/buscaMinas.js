@@ -79,7 +79,7 @@ class Casilla {
         console.log(this.html.classList);
     }
 }
-
+//Refactorizar poner objetos en las casillas con referencia a la misma
 class Mina extends Casilla {
     constructor(x, y) {
         super(x, y);
