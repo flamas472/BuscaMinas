@@ -65,9 +65,9 @@ class Casilla {
 
     ponerBanderita(e) {
         e.preventDefault();
-        this.html.innerHTML = '<i class="fas fa-flag"></i>';
+        //this.html.innerHTML = '<i class="fas fa-flag"></i>';
         //this.estado = 'bandera';
-        //let banderita = document.createElement('i');
+        let banderita = document.createElement('i');
         
         banderita.className = 'fas fa-flag';
         this.html.appendChild(banderita);
