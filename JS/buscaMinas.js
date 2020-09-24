@@ -43,14 +43,13 @@ class Casilla {
         this.estado = 'oculto';        
         this.html = document.createElement('div');
         this.html.className = 'casilla';
-        this.html.addEventListener('click', this.revelar.bind(this));
-        this.html.addEventListener('contextmenu', this.ponerBanderita.bind(this));
-        
+        let casillaOculta = new CasillaOculta(this);
+        this.html.appendChild(casillaOculta.contenido);
+        this.html.addEventListener('contextmenu', e => e.preventDefault());
+        this.html.addEventListener('selectionchange', e => e.preventDefault());
     }
 
     revelar() {
-        
-        //this.html.style.backgroundColor = 'white';
         this.html.innerText = this.minasEnContacto;
         if(this.estado == 'oculto' && this.minasEnContacto == 0) {
             this.estado = 'revelado';
@@ -59,27 +58,17 @@ class Casilla {
             this.estado = 'revelado';
         }
         this.html.className = 'casilla revelada numero' + this.minasEnContacto;
-        //this.html.removeEventListener('click', )
-        return 'casilla';
     }
 
     ponerBanderita(e) {
-        e.preventDefault();
-        //this.html.innerHTML = '<i class="fas fa-flag"></i>';
-        //this.estado = 'bandera';
-        let banderita = document.createElement('i');
-        
-        banderita.className = 'fas fa-flag';
-        this.html.appendChild(banderita);
+        let banderita = new Banderita(this);
+        this.html.appendChild(banderita.contenido);
     }
 
     agregarMinaEnContacto() {
         this.minasEnContacto++;
-        console.log(this.html.className);
-        console.log(this.html.classList);
     }
 }
-//Refactorizar poner objetos en las casillas con referencia a la misma
 class Mina extends Casilla {
     constructor(x, y) {
         super(x, y);
@@ -87,11 +76,68 @@ class Mina extends Casilla {
     revelar() {
         this.html.className = 'casilla revelada mina';
         this.html.innerHTML = '<i class="fas fa-bomb"></i>';
-        //perder
-        return 'mina';
+        //aca debería perder, recordar que tiene referencia al mapa (this.mapa)
     }
-    agregarMinaEnContacto() {
+}
+//Refactorizar poner objetos en las casillas con referencia a la misma
 
+class CasillaOculta {
+    constructor(casilla) {
+        this.casilla = casilla;
+        this.contenido = document.createElement('div');
+        this.contenido.style.height = '100%';
+        this.contenido.style.width = '100%';
+        this.contenido.addEventListener('click', this.clickIzquierdo.bind(this));
+        this.contenido.addEventListener('contextmenu', this.clickDerecho.bind(this));
+        
+    }
+
+    clickIzquierdo() {
+        this.casilla.html.removeChild(this.contenido);
+        this.casilla.revelar();
+    }
+    clickDerecho(e) {
+        e.preventDefault();
+        this.casilla.html.removeChild(this.contenido);
+        this.casilla.ponerBanderita();
+    }
+}
+class CasillaMina {
+    constructor(casilla) {
+        this.casilla = casilla;
+
+    }
+}
+class CasillaSegura {
+    constructor(casilla) {
+        this.casilla = casilla;
+        this.contenido = document.createElement('div');
+        this.contenido.innerText = casilla.minasEnContacto;
+        this.contenido.className = 'casilla revelada numero' + this.minasEnContacto;
+    }
+}
+class Banderita {
+    constructor(casilla) {
+        this.casilla = casilla;
+        this.contenido = document.createElement('i');
+        this.contenido.className = 'fas fa-flag';
+
+        this.contenido.addEventListener('click', this.quitarBanderita.bind(this));
+    }
+    
+    //quitarBanderita remueve la bandera y coloca nuevamente la casilla oculta
+    quitarBanderita() {
+        this.casilla.html.removeChild(this.contenido);
+        let casillaOculta = new CasillaOculta(this.casilla);
+        this.casilla.html.appendChild(casillaOculta.contenido);
+    }
+}
+
+class Mina2 {
+    constructor(casilla) {
+        this.casilla = casilla;
+        this.contenido = document.createElement('i');
+        this.contenido.className = 'fas fa-bomb';
     }
 }
 
