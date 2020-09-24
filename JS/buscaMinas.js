@@ -92,8 +92,8 @@ class CasillaMina extends Casilla {
         if(this.estado != 'banderita') {
             this.contenedor.className = 'casilla revelada mina';
             this.contenedor.innerHTML = '<i class="fas fa-bomb"></i>';
+            this.mapa.perder();
         } else {
-            //aca debería perder, recordar que tiene referencia al mapa (this.mapa)
         }
     }
 }
@@ -245,6 +245,12 @@ class Mapa {
             return banderitas;
         }, 0);
         let minas = this.mapahtml[position.y][position.x].minasEnContacto;
+
+    }
+
+    perder() {
+        console.log('Perdiste');
+        alert('PERDISTE');
 
     }
 
