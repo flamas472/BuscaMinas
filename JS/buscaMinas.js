@@ -1,6 +1,5 @@
 class Position {
     constructor(x, y) {
-        
         this.x = x;
         this.y = y;
     }
@@ -89,9 +88,6 @@ class Casilla {
     }
 }
 class CasillaMina extends Casilla {
-    /*constructor(x, y) {
-        super(x, y);
-    }*/
     revelar() {
         if(this.estado != 'banderita') {
             this.contenedor.className = 'casilla revelada mina';
@@ -159,14 +155,12 @@ class Mapa {
         this.ancho = ancho;
         this.alto = alto;
         this.mapa = [];
-        //this.mapahtml = [];
         this.cantidadDeMinas = cantidadDeMinas;
         this.minas = [];
         this.llenarMinas();
         this.llenarMapa(ancho, alto);
         this.contenedor = document.createElement('div');
         this.contenedor.id = 'map';
-        //this.llenarhtml();
         this.llenarhtml();
         this.contenedor.style.width = 25*this.ancho + 'px';
         this.contenedor.style.height = 25*this.alto + 'px';
