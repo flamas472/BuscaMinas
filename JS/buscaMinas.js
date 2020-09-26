@@ -65,6 +65,7 @@ class Casilla {
                  let numero = new CasillaNumero(this);
                  this.contenedor.append(numero.contenido);
             }
+            this.mapa.revisarCasillasSeguras();
         }
         
     }
@@ -154,14 +155,14 @@ class Mapa {
     constructor(ancho, alto, cantidadDeMinas = Math.floor((ancho + alto) / 2 +1)) {
         this.ancho = ancho;
         this.alto = alto;
-        this.mapa = [];
+        this.matriz = [];
         this.cantidadDeMinas = cantidadDeMinas;
         this.minas = [];
         this.llenarMinas();
-        this.llenarMapa(ancho, alto);
+        this.llenarMatriz(ancho, alto);
         this.contenedor = document.createElement('div');
         this.contenedor.id = 'map';
-        this.llenarhtml();
+        this.llenarMapa();
         this.contenedor.style.width = 25*this.ancho + 'px';
         this.contenedor.style.height = 25*this.alto + 'px';
         this.contenedor.style.gridTemplate = 'repeat('+ alto +', 1fr)/repeat('+ ancho +', 1fr)';
@@ -192,46 +193,48 @@ class Mapa {
         return this.hayMinaPos(new Position(x, y));
     }
 
-    llenarMapa(ancho, alto) {
+    llenarMatriz(ancho, alto) {
         for(let y = 0; y < alto; y++) {
             const thisRow = []
             for(let x = 0; x < ancho; x++) {
                 thisRow.push(new Position(x, y));
             }
-            this.mapa.push(thisRow);
+            this.matriz.push(thisRow);
         }
     }
 
-    llenarhtml() {
-        this.mapahtml = this.mapa.map(row => {
-            let rowhtml = row.map(pos => {
-                let poshtml;
+    llenarMapa() {
+        this.casillasSeguras = [];
+        this.mapa = this.matriz.map(row => {
+            let casillasRow = row.map(pos => {
+                let casilla;
                 if(this.hayMinaPos(pos)) {
-                    poshtml = new CasillaMina(pos.x, pos.y, this);
+                    casilla = new CasillaMina(pos.x, pos.y, this);
                 } else {
-                    poshtml = new Casilla(pos.x, pos.y, this)
+                    casilla = new Casilla(pos.x, pos.y, this);
+                    this.casillasSeguras.push(casilla);
                 }
-                this.contenedor.appendChild(poshtml.contenedor);
-                return poshtml;
+                this.contenedor.appendChild(casilla.contenedor);
+                return casilla;
             });
-            return rowhtml;
+            return casillasRow;
         });
         this.minas.forEach(pos => this.actualizarCasillas(pos))
     }
 
     actualizarCasillas(pos) {
         pos.adyacentes(this.ancho, this.alto).forEach(mina => {
-            this.mapahtml[mina.y][mina.x].agregarMinaEnContacto();
+            this.mapa[mina.y][mina.x].agregarMinaEnContacto();
         });
     }
 
     revelarAdyacentes(position) {
         let adyacentes = position.adyacentes(this.ancho, this.alto);
-        let minas = this.mapahtml[position.y][position.x].minasEnContacto;
+        let minas = this.mapa[position.y][position.x].minasEnContacto;
         if(minas <= this.banderitasAdyacentes(position)) {
             //solo revela adyacentes si tiene en contacto tantas banderas como minas tiene
             adyacentes.forEach(pos => {
-                this.mapahtml[pos.y][pos.x].revelar();
+                this.mapa[pos.y][pos.x].revelar();
             })
         }
     }
@@ -239,21 +242,30 @@ class Mapa {
     banderitasAdyacentes(position) {
         let adyacentes = position.adyacentes(this.ancho, this.alto);
         return adyacentes.reduce((banderitas, pos) => {
-            if(this.mapahtml[pos.y][pos.x].estado == 'banderita') {
+            if(this.mapa[pos.y][pos.x].estado == 'banderita') {
                 banderitas++;
             }
             return banderitas;
         }, 0);
-        let minas = this.mapahtml[position.y][position.x].minasEnContacto;
+        let minas = this.mapa[position.y][position.x].minasEnContacto;
 
     }
 
     perder() {
         console.log('Perdiste');
         alert('PERDISTE');
-
     }
 
+    ganar() {
+        console.log('Ganaste');
+        alert('GANASTE');
+    }
+
+    revisarCasillasSeguras() {
+        if(this.casillasSeguras.every(casilla => casilla.estado == 'revelado')) {
+            this.ganar();
+        }
+    }
 }
 
 const link = document.createElement('link');
