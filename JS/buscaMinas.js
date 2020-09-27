@@ -71,6 +71,45 @@ class Casilla {
         }
         
     }
+    llenarConMina() {
+        this.revelacion = this.revelarMina;
+    }
+    llenarConSegura() {
+        this.revelacion = this.revelarNumero;
+    }
+    revelarNumero(doDefault = true) {
+        if(this.estado == 'revelado') {
+            //si ya esta revelada no hace nada
+        } else if(this.estado == 'oculto'){
+            //si está oculta cambio estado a revelado
+            this.contenedor.removeChild(this.contiene.contenido);
+            this.contenedor.className = 'casilla revelada';
+            //this.contiene = null;
+            this.estado = 'revelado';
+            if(this.minasEnContacto == 0) {
+                //si no tiene minas en contacto revelo adyacentes
+                this.revelarAdyacentes();
+            } else {
+                //si tiene minas en contacto coloco el numero y el boton delante
+                 //this.contenedor.innerText = this.minasEnContacto;
+                 let numero = new CasillaNumero(this);
+                 this.contenedor.append(numero.contenido);
+            }
+            if(doDefault) {
+                this.mapa.revisarCasillasSeguras();
+            }
+        }
+    }
+    revelarMina(doDefault = true) {
+        if(this.estado != 'banderita') {
+            this.contenedor.className = 'casilla revelada mina';
+            this.contenedor.innerHTML = '<i class="fas fa-bomb"></i>';
+            if(doDefault) {
+                this.mapa.perder();                
+            }
+        } else {
+        }
+    }
     revelarAdyacentes() {
         this.mapa.revelarAdyacentes(this.position);
     }
