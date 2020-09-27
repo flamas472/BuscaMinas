@@ -79,6 +79,7 @@ class Casilla {
         this.revelar = this.revelarNumero;
     }
     crearMapa() {
+        this.mapa.llenarCasillas(this.position);
         //aca debería llamar al mapa para que cree las minas
     }
     revelarNumero(doDefault = true) {
@@ -186,7 +187,6 @@ class Mapa {
         this.matriz = [];
         this.cantidadDeMinas = cantidadDeMinas;
         this.minas = [];
-        this.llenarMinas();
         this.llenarMatriz(ancho, alto);
         this.contenedor = document.createElement('div');
         this.contenedor.id = 'map';
@@ -196,17 +196,18 @@ class Mapa {
         this.contenedor.style.gridTemplate = 'repeat('+ alto +', 1fr)/repeat('+ ancho +', 1fr)';
     }
 
-    llenarMinas() {
+    llenarMinas(positionIgnore = new Position(this.ancho, this.alto)) {
         while(this.minas.length < this.cantidadDeMinas) {
             this.añadirMina();
         }
     }
 
-    añadirMina() {
+    añadirMina(positionIgnore = new Position(this.ancho, this.alto)) {
         let x = Math.floor(Math.random()*this.ancho);
         let y = Math.floor(Math.random()*this.alto);
         let pos = new Position(x, y);
-        if(this.minas.some(aPos => aPos.equals(pos))) {
+        if(this.minas.some(aPos => aPos.equals(pos) || aPos.equals(positionIgnore))) {
+            //si coincide con el primer click o con una mina anterior, se saltea esta posicion
         } else {
             this.minas.push(pos);
         }
@@ -237,17 +238,34 @@ class Mapa {
             let casillasRow = row.map(pos => {
                 let casilla = new Casilla(pos.x, pos.y, this);
                 if(this.hayMinaPos(pos)) {
-                    casilla.llenarConMina();
+                    //casilla.llenarConMina();
                 } else {
-                    casilla.llenarConSegura();
-                    this.casillasSeguras.push(casilla);
+                    //casilla.llenarConSegura();
+                    //this.casillasSeguras.push(casilla);
                 }
                 this.contenedor.appendChild(casilla.contenedor);
                 return casilla;
             });
             return casillasRow;
         });
-        this.minas.forEach(pos => this.actualizarCasillas(pos))
+        //this.minas.forEach(pos => this.actualizarCasillas(pos))
+    }
+
+    llenarCasillas(position) {
+        this.llenarMinas(position);
+        this.mapa.forEach(row => {
+            row.forEach(casilla => {
+                if(this.hayMinaPos(casilla.position)) {
+                    casilla.llenarConMina();
+                } else {
+                    casilla.llenarConSegura();
+                    this.casillasSeguras.push(casilla);
+                }
+            });
+        });
+
+        this.minas.forEach(pos => this.actualizarCasillas(pos));
+        this.mapa[position.y][position.x].revelar();
     }
 
     actualizarCasillas(pos) {
@@ -308,15 +326,13 @@ class Mapa {
 const link = document.createElement('link');
 link.rel = 'stylesheet';
 link.href = 'Styles.css';
-
-
 document.getElementsByTagName('head')[0].appendChild(link);
 const buscaMinas = document.getElementById("buscaMinas");
-let titulo = document.createElement('div');
+//let titulo = document.createElement('div');
 //titulo.
 //buscaMinas.appendChild();
 
-const mapa = new Mapa(16, 16, 40);
+const mapa = new Mapa(9, 9, 10);
 buscaMinas.appendChild(mapa.contenedor);
 
 
