@@ -46,7 +46,7 @@ class Casilla {
         this.contenedor.addEventListener('contextmenu', e => e.preventDefault());
         this.contenedor.addEventListener('selectionchange', e => e.preventDefault());
     }
-    revelar() {
+    revelar(doDefault = true) {
         
         if(this.estado == 'revelado') {
             //si ya esta revelada no hace nada
@@ -65,7 +65,9 @@ class Casilla {
                  let numero = new CasillaNumero(this);
                  this.contenedor.append(numero.contenido);
             }
-            this.mapa.revisarCasillasSeguras();
+            if(doDefault) {
+                this.mapa.revisarCasillasSeguras();
+            }
         }
         
     }
@@ -89,11 +91,13 @@ class Casilla {
     }
 }
 class CasillaMina extends Casilla {
-    revelar() {
+    revelar(doDefault = true) {
         if(this.estado != 'banderita') {
             this.contenedor.className = 'casilla revelada mina';
             this.contenedor.innerHTML = '<i class="fas fa-bomb"></i>';
-            this.mapa.perder();
+            if(doDefault) {
+                this.mapa.perder();                
+            }
         } else {
         }
     }
@@ -239,6 +243,14 @@ class Mapa {
         }
     }
 
+    revelarMapa() {
+        this.mapa.forEach(row => {
+            row.forEach(casilla => {
+                casilla.revelar(false);
+            });
+        });
+    }
+
     banderitasAdyacentes(position) {
         let adyacentes = position.adyacentes(this.ancho, this.alto);
         return adyacentes.reduce((banderitas, pos) => {
@@ -275,6 +287,10 @@ link.href = 'Styles.css';
 
 document.getElementsByTagName('head')[0].appendChild(link);
 const buscaMinas = document.getElementById("buscaMinas");
+let titulo = document.createElement('div');
+//titulo.
+//buscaMinas.appendChild();
+
 const mapa = new Mapa(16, 16, 40);
 buscaMinas.appendChild(mapa.contenedor);
 
