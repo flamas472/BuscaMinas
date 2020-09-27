@@ -37,6 +37,7 @@ class Casilla {
     constructor(x, y, mapa) {
         this.position = new Position(x, y);
         this.mapa = mapa;//referencia al mapa al cual pertenece|
+        this.revelar = this.crearMapa;
         this.minasEnContacto = 0;
         this.estado = 'oculto';        
         this.contenedor = document.createElement('div');
@@ -46,7 +47,7 @@ class Casilla {
         this.contenedor.addEventListener('contextmenu', e => e.preventDefault());
         this.contenedor.addEventListener('selectionchange', e => e.preventDefault());
     }
-    revelar(doDefault = true) {
+    /*revelar(doDefault = true) {
         
         if(this.estado == 'revelado') {
             //si ya esta revelada no hace nada
@@ -70,12 +71,15 @@ class Casilla {
             }
         }
         
-    }
+    }*/
     llenarConMina() {
-        this.revelacion = this.revelarMina;
+        this.revelar = this.revelarMina;
     }
     llenarConSegura() {
-        this.revelacion = this.revelarNumero;
+        this.revelar = this.revelarNumero;
+    }
+    crearMapa() {
+        //aca debería llamar al mapa para que cree las minas
     }
     revelarNumero(doDefault = true) {
         if(this.estado == 'revelado') {
@@ -105,6 +109,7 @@ class Casilla {
             this.contenedor.className = 'casilla revelada mina';
             this.contenedor.innerHTML = '<i class="fas fa-bomb"></i>';
             if(doDefault) {
+                this.contenedor.style.backgroundColor = 'red';
                 this.mapa.perder();                
             }
         } else {
@@ -127,18 +132,6 @@ class Casilla {
     }
     agregarMinaEnContacto() {
         this.minasEnContacto++;
-    }
-}
-class CasillaMina extends Casilla {
-    revelar(doDefault = true) {
-        if(this.estado != 'banderita') {
-            this.contenedor.className = 'casilla revelada mina';
-            this.contenedor.innerHTML = '<i class="fas fa-bomb"></i>';
-            if(doDefault) {
-                this.mapa.perder();                
-            }
-        } else {
-        }
     }
 }
 //Refactorizar poner objetos en las casillas con referencia a la misma
@@ -183,14 +176,6 @@ class Banderita {
     }
     clickIzquierdo() {
         this.casilla.quitarBanderita();
-    }
-}
-
-class Mina2 {
-    constructor(casilla) {
-        this.casilla = casilla;
-        this.contenido = document.createElement('i');
-        this.contenido.className = 'fas fa-bomb';
     }
 }
 
@@ -250,11 +235,11 @@ class Mapa {
         this.casillasSeguras = [];
         this.mapa = this.matriz.map(row => {
             let casillasRow = row.map(pos => {
-                let casilla;
+                let casilla = new Casilla(pos.x, pos.y, this);
                 if(this.hayMinaPos(pos)) {
-                    casilla = new CasillaMina(pos.x, pos.y, this);
+                    casilla.llenarConMina();
                 } else {
-                    casilla = new Casilla(pos.x, pos.y, this);
+                    casilla.llenarConSegura();
                     this.casillasSeguras.push(casilla);
                 }
                 this.contenedor.appendChild(casilla.contenedor);
@@ -303,6 +288,7 @@ class Mapa {
     }
 
     perder() {
+        this.revelarMapa();
         console.log('Perdiste');
         alert('PERDISTE');
     }
