@@ -16,7 +16,7 @@ html {
 }
 #buscaMinas {
     margin: 0 auto;
-    width: 500px;
+    width: 100%;
     background-color: #255;
     display: flex;
     flex-direction: column;

@@ -47,31 +47,6 @@ class Casilla {
         this.contenedor.addEventListener('contextmenu', e => e.preventDefault());
         this.contenedor.addEventListener('selectionchange', e => e.preventDefault());
     }
-    /*revelar(doDefault = true) {
-        
-        if(this.estado == 'revelado') {
-            //si ya esta revelada no hace nada
-        } else if(this.estado == 'oculto'){
-            //si está oculta cambio estado a revelado
-            this.contenedor.removeChild(this.contiene.contenido);
-            this.contenedor.className = 'casilla revelada';
-            //this.contiene = null;
-            this.estado = 'revelado';
-            if(this.minasEnContacto == 0) {
-                //si no tiene minas en contacto revelo adyacentes
-                this.revelarAdyacentes();
-            } else {
-                //si tiene minas en contacto coloco el numero y el boton delante
-                 //this.contenedor.innerText = this.minasEnContacto;
-                 let numero = new CasillaNumero(this);
-                 this.contenedor.append(numero.contenido);
-            }
-            if(doDefault) {
-                this.mapa.revisarCasillasSeguras();
-            }
-        }
-        
-    }*/
     llenarConMina() {
         this.revelar = this.revelarMina;
     }
@@ -162,10 +137,15 @@ class CasillaNumero {
         this.contenido.innerText = casilla.minasEnContacto;
         this.contenido.className = 'contenido numero' + this.casilla.minasEnContacto;
         this.contenido.addEventListener('contextmenu', this.clickDerecho.bind(this));
+        this.contenido.addEventListener('mousedown', this.mouseDown.bind(this));
     }
     clickDerecho(e) {
         e.preventDefault();
         this.casilla.revelarAdyacentes();
+
+    }
+    mouseDown(e) {
+
     }
 }
 class Banderita {
@@ -181,11 +161,15 @@ class Banderita {
 }
 
 class Mapa {
-    constructor(ancho, alto, cantidadDeMinas = Math.floor((ancho + alto) / 2 +1)) {
+    constructor(ancho = 9, alto = 9, cantidadDeMinas = 10) {
         this.ancho = ancho;
         this.alto = alto;
         this.matriz = [];
-        this.cantidadDeMinas = cantidadDeMinas;
+        if(cantidadDeMinas >= this.ancho * this.alto) {
+            this.cantidadDeMinas = this.ancho * this.alto / 4;
+        } else {
+            this.cantidadDeMinas = cantidadDeMinas;
+        }
         this.minas = [];
         this.llenarMatriz(ancho, alto);
         this.contenedor = document.createElement('div');
@@ -198,7 +182,7 @@ class Mapa {
 
     llenarMinas(positionIgnore = new Position(this.ancho, this.alto)) {
         while(this.minas.length < this.cantidadDeMinas) {
-            this.añadirMina();
+            this.añadirMina(positionIgnore);
         }
     }
 
@@ -206,8 +190,8 @@ class Mapa {
         let x = Math.floor(Math.random()*this.ancho);
         let y = Math.floor(Math.random()*this.alto);
         let pos = new Position(x, y);
-        if(this.minas.some(aPos => aPos.equals(pos) || aPos.equals(positionIgnore))) {
-            //si coincide con el primer click o con una mina anterior, se saltea esta posicion
+        if(this.minas.some(aPos => aPos.equals(pos)) || pos.equals(positionIgnore)) {
+            console.log(pos.toString() + 'ignorado');
         } else {
             this.minas.push(pos);
         }
@@ -323,16 +307,134 @@ class Mapa {
     }
 }
 
-const link = document.createElement('link');
-link.rel = 'stylesheet';
-link.href = 'Styles.css';
-document.getElementsByTagName('head')[0].appendChild(link);
-const buscaMinas = document.getElementById("buscaMinas");
-//let titulo = document.createElement('div');
-//titulo.
-//buscaMinas.appendChild();
+class Buscaminas {
+    constructor(id = 'buscaMinas') {
+        //agregar hoja de estilos
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'Styles.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+        //obtener contenedor
+        this.contenedor = document.getElementById(id);
+        this.contenedor.style.display = 'flex';
+        this.contenedor.style.flexDirection = 'column';
+        //agregar botones
+        this.contenedor.appendChild(this.insertarFormularioNuevoJuego());
+        //this.insertarFormularioNuevoJuego();
+        //this.contenedor.appendChild();
 
-const mapa = new Mapa(9, 9, 10);
-buscaMinas.appendChild(mapa.contenedor);
+        //agregar mapa
+        this.insertarNuevoMapa(9, 9, 10);
+        //this.mapa = new Mapa(9, 9, 10);
+        //this.contenedor.appendChild(this.mapa.contenedor);
+    }
+
+    insertarNuevoMapa(ancho = 9, alto = 9, minas = 10) {
+        if(this.contenedor.childElementCount > 1) {
+            this.contenedor.removeChild(this.mapa.contenedor);
+        }
+
+        this.mapa = new Mapa(ancho, alto, minas);
+        this.contenedor.appendChild(this.mapa.contenedor);
+    }
+
+    insertarFormularioNuevoJuego() {
+        let formNuevoJuego = document.createElement('form');
+
+        let divAncho = document.createElement('div');
+        let labelAncho = document.createElement('label');
+        labelAncho.innerText = 'Ancho:';
+        labelAncho.htmlFor = 'ancho';
+        let inputAncho = document.createElement('input');
+        inputAncho.id = 'ancho';
+        inputAncho.type = 'number';
+        inputAncho.value = '9';
+        divAncho.appendChild(labelAncho);
+        divAncho.appendChild(inputAncho);
+
+        let divAlto = document.createElement('div');
+        let labelAlto = document.createElement('label');
+        labelAlto.innerText = 'Alto:';
+        labelAlto.htmlFor = 'alto';
+        let inputAlto = document.createElement('input');
+        inputAlto.id = 'alto';
+        inputAlto.type = 'number';
+        inputAlto.value = '9';
+        divAlto.appendChild(labelAlto);
+        divAlto.appendChild(inputAlto);
+
+        let divMinas = document.createElement('div');
+        let labelMinas = document.createElement('label');
+        labelMinas.innerText = 'Minas:';
+        labelMinas.htmlFor = 'Minas';
+        let inputMinas = document.createElement('input');
+        inputMinas.id = 'Minas';
+        inputMinas.type = 'number';
+        inputMinas.value = '10';
+        divMinas.appendChild(labelMinas);
+        divMinas.appendChild(inputMinas);
+
+        formNuevoJuego.appendChild(divAncho);
+        formNuevoJuego.appendChild(divAlto);
+        formNuevoJuego.appendChild(divMinas);
+
+        let modificarNiveles = (ancho, alto, minas) => {
+            inputAncho.value = ancho;
+            inputAlto.value = alto;
+            inputMinas.value = minas;
+
+        }
+
+        let nivel = document.createElement('div');
+        let btnPrincipiante = document.createElement('button');
+        btnPrincipiante.innerText = 'Principiante';
+        btnPrincipiante.onclick = (e) => {
+            e.preventDefault();
+            modificarNiveles(9,9,10);
+        };
+        let btnIntermedio = document.createElement('button');
+        btnIntermedio.innerText = 'Intermedio';
+        btnIntermedio.onclick = (e) => {
+            e.preventDefault();
+            modificarNiveles(16,16,40);
+        };
+        let btnExperto = document.createElement('button');
+        btnExperto.innerText = 'Experto';
+        btnExperto.onclick = (e) => {
+            e.preventDefault();
+            modificarNiveles(30,16,99);
+        };
+        nivel.style.display = 'flex';
+        nivel.appendChild(btnPrincipiante);
+        nivel.appendChild(btnIntermedio);
+        nivel.appendChild(btnExperto);
+        formNuevoJuego.appendChild(nivel);
+
+        let btnSubmit = document.createElement('input');
+        btnSubmit.type = 'submit';
+        btnSubmit.value = 'Nuevo Juego';
+        formNuevoJuego.appendChild(btnSubmit);
+        formNuevoJuego.style.display = 'flex';
+        formNuevoJuego.style.flexDirection = 'column';
+        formNuevoJuego.onsubmit = (e) => {
+            e.preventDefault();
+            if(inputMinas.value >= inputAncho.value * inputAlto.value) {
+                alert('demasiadas minas');
+            } else {
+                this.insertarNuevoMapa(inputAncho.value, inputAlto.value, inputMinas.value);
+            }
+        }
+        return formNuevoJuego;
+    }
+    
+
+}
+
+
+
+let buscaMinas = new Buscaminas('buscaMinas');
+//const buscaMinas = document.getElementById("buscaMinas");
+//const mapa = new Mapa(9, 9, 10);
+//buscaMinas.appendChild(mapa.contenedor);
 
 
