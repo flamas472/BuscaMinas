@@ -145,7 +145,7 @@ class CasillaNumero {
 
     }
     mouseDown(e) {
-
+        
     }
 }
 class Banderita {
