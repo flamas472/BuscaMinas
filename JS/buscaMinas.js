@@ -109,6 +109,15 @@ class Casilla {
     agregarMinaEnContacto() {
         this.minasEnContacto++;
     }
+
+    alternarResaltar() {
+        if(this.estado == 'oculto') {
+            this.contenedor.classList.toggle('revelada');
+        }
+    }
+    alternarResaltarAdyacentes() {
+        this.mapa.alternarResaltarAdyacentes(this.position);
+    }
 }
 //Refactorizar poner objetos en las casillas con referencia a la misma
 class CasillaOculta {
@@ -136,8 +145,9 @@ class CasillaNumero {
         this.contenido = document.createElement('div');
         this.contenido.innerText = casilla.minasEnContacto;
         this.contenido.className = 'contenido numero' + this.casilla.minasEnContacto;
-        this.contenido.addEventListener('contextmenu', this.clickDerecho.bind(this));
+        //this.contenido.addEventListener('contextmenu', this.clickDerecho.bind(this));
         this.contenido.addEventListener('mousedown', this.mouseDown.bind(this));
+        this.contenido.addEventListener('mouseup', this.mouseUp.bind(this));
     }
     clickDerecho(e) {
         e.preventDefault();
@@ -145,7 +155,17 @@ class CasillaNumero {
 
     }
     mouseDown(e) {
-        
+        e.preventDefault();
+        if(e.button == 2) {
+            this.casilla.alternarResaltarAdyacentes()
+        }
+    }
+    mouseUp(e) {
+        e.preventDefault();
+        if(e.button == 2) {
+            this.casilla.alternarResaltarAdyacentes()
+            this.casilla.revelarAdyacentes();
+        }
     }
 }
 class Banderita {
@@ -269,6 +289,14 @@ class Mapa {
         }
     }
 
+    alternarResaltarAdyacentes(position) {
+        let adyacentes = position.adyacentes(this.ancho, this.alto);
+        let minas = this.mapa[position.y][position.x].minasEnContacto;
+        adyacentes.forEach(pos => {
+            this.mapa[pos.y][pos.x].alternarResaltar();
+        })
+    }
+
     revelarMapa() {
         this.mapa.forEach(row => {
             row.forEach(casilla => {
@@ -290,6 +318,7 @@ class Mapa {
     }
 
     perder() {
+        
         this.revelarMapa();
         console.log('Perdiste');
         alert('PERDISTE');
